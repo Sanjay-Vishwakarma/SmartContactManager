@@ -11,26 +11,30 @@
     @Entity
     @Data
     @Table(name = "USER")
-    public class User {
+    public class UserSignUp {
 
         @Id
         @GeneratedValue(strategy= GenerationType.IDENTITY)
-        private int id;
+        private long id;
+
         private String name;
+
         @Column(unique=true)
         private String email;
-        private String password;
-        private String role;
-        private boolean enabled = true;
-        private String imageUrl;
-        @Column(length = 300)
-        private String about;
-        private LocalDate createdAt;
-        private LocalDate updatedAt;
 
-        @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY,mappedBy = "user")
-        @JsonManagedReference
-        private List<Contact> contacts =new ArrayList<>();
+        private String username;
+
+        private String password;
+
+        private String role; //  default
+
+        private boolean enabled = true; // active or inactive
+
+//        private String imageUrl;
+
+        private LocalDate createdAt;
+
+        private LocalDate updatedAt;
 
 
     }

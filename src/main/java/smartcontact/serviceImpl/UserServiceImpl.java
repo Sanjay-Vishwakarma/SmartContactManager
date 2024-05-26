@@ -5,9 +5,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import smartcontact.dto.ContactDto;
-import smartcontact.dto.UserDto;
+import smartcontact.dto.UserSignInDto;
+import smartcontact.dto.UserSignUpDto;
 import smartcontact.entities.Contact;
-import smartcontact.entities.User;
+import smartcontact.entities.UserSignUp;
 import smartcontact.exception.InvalidRequestException;
 import smartcontact.exception.UserNotFoundException;
 import smartcontact.repository.ContactRepository;
@@ -15,10 +16,8 @@ import smartcontact.repository.UserRepository;
 import smartcontact.service.UserService;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -30,43 +29,21 @@ public class UserServiceImpl implements UserService {
     @Autowired
     public UserRepository userRepository;
 
-    @Autowired
-    public ContactRepository contactRepository;
-
-
-
-
     @Transactional
-    public User saveUser(UserDto userDto) {
+    public UserSignUp saveUser(UserSignUpDto userDto) {
         // Check if email already exists for the user
         if (userRepository.existsByEmail(userDto.getEmail())) {
             throw new InvalidRequestException("Duplicate Email: " + userDto.getEmail());
         }
-
+        if (userRepository.existsByEmail(userDto.getUsername())) {
+            throw new InvalidRequestException("Duplicate username: " + userDto.getUsername());
+        }
         try {
-            // Map UserDto to User entity
-            User userToSave = modelMapper.map(userDto, User.class);
-            userToSave.setCreatedAt(LocalDate.now());
-
-            // Validate and map ContactDtos to Contact entities
-            List<Contact> contactsToSave = new ArrayList<>();
-            for (ContactDto contactDto : userDto.getContacts()) {
-                if (userRepository.existsByEmail(contactDto.getEmail())) {
-                    throw new InvalidRequestException("Duplicate Contact Email: " + contactDto.getEmail());
-                }
-                Contact contact = modelMapper.map(contactDto, Contact.class);
-                contact.setCreatedAt(LocalDate.now());
-                contact.setUser(userToSave); // Set the user for each contact
-                contactsToSave.add(contact);
-            }
-
-            // Set the contacts for the user
-            userToSave.setContacts(contactsToSave);
-
-            // Save the user entity (including associated contacts)
-            userRepository.save(userToSave);
-
-            return userToSave;
+            UserSignUp user = modelMapper.map(userDto, UserSignUp.class);
+            user.setCreatedAt(LocalDate.now());
+            user.setRole("User");
+            userRepository.save(user);
+            return user;
         } catch (Exception e) {
             e.printStackTrace(); // Log the exception
             throw new RuntimeException("Failed to save user", e);
@@ -74,56 +51,27 @@ public class UserServiceImpl implements UserService {
     }
 
 
-
     @Override
-    public void deleteUser(int id) {
+    public void deleteUser(long id) {
         userRepository.deleteById(id);
     }
 
     @Override
-    public List<User> getAllUsers() {
-        List<User> userList = userRepository.findAll();
+    public List<UserSignUp> getAllUsers() {
+        List<UserSignUp> userList = userRepository.findAll();
         return userList;
     }
 
     @Override
     @Transactional
-    public User updateUser(int userId, UserDto userDto) {
+    public UserSignUp updateUser(long userId, UserSignUpDto userDto) {
         try {
-            Optional<User> optionalUser = userRepository.findById(userId);
+            Optional<UserSignUp> optionalUser = userRepository.findById(userId);
             if (optionalUser.isPresent()) {
-                User existingUser = optionalUser.get();
-
-                // Update user fields from UserDto
+                UserSignUp existingUser = optionalUser.get();
                 existingUser.setName(userDto.getName());
+                existingUser.setUsername(userDto.getUsername());
                 existingUser.setEmail(userDto.getEmail());
-                existingUser.setPassword(userDto.getPassword());
-                existingUser.setRole(userDto.getRole());
-                existingUser.setEnabled(userDto.isEnabled());
-                existingUser.setImageUrl(userDto.getImageUrl());
-                existingUser.setAbout(userDto.getAbout());
-                existingUser.setUpdatedAt(LocalDate.now());
-
-                // Update or save contacts
-                List<ContactDto> contactDtos = userDto.getContacts();
-                for (ContactDto contactDto : contactDtos) {
-                    Optional<Contact> optionalContact = contactRepository.findById(contactDto.getId());
-                    if (optionalContact.isPresent()) {
-                        Contact existingContact = optionalContact.get();
-                        // Update existing contact fields from ContactDto
-                        existingContact.setName(contactDto.getName());
-                        existingContact.setSecondName(contactDto.getSecondName());
-                        existingContact.setWork(contactDto.getWork());
-                        existingContact.setEmail(contactDto.getEmail());
-                        existingContact.setPhone(contactDto.getPhone());
-                        existingContact.setImage(contactDto.getImage());
-                        existingContact.setDescription(contactDto.getDescription());
-                        existingContact.setUpdatedAt(LocalDate.now());
-                    } else {
-                        System.out.printf("Contact not found with id: %d\n", contactDto.getId());
-                    }
-                }
-                // Save updated user (including contacts)
                 return userRepository.save(existingUser);
             } else {
                 throw new UserNotFoundException("User not found with id: " + userId);
@@ -135,18 +83,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(int userId) { // 1st way
-        User user = userRepository.findById(userId).orElse(null); // Find user or return null
+    public UserSignUp getUserById(long userId) { // 1st way
+        UserSignUp user = userRepository.findById(userId).orElse(null); // Find user or return null
         if (user == null) {
             throw new UserNotFoundException("User not found with ID: " + userId);
         }
         return user;
     }
 
-//    @Override
-//    public User getUserById(int userId) { // 2nd way
-//        return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
-//    }
-
-
+    @Override
+    public boolean userSignIn(UserSignInDto userDto) {
+        try {
+            UserSignUp userDetails = userRepository.findByUsernameAndPassword(userDto.getUsername(), userDto.getPassword());
+            System.out.println("userDetails = " + userDetails);
+            if (userDetails !=null && userDto.getPassword().equals(userDetails.getPassword())) {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

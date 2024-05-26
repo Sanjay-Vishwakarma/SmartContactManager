@@ -7,6 +7,6 @@ import smartcontact.entities.Contact;
 import java.util.Optional;
 
 @Repository
-public interface ContactRepository extends JpaRepository<Contact,Integer> {
+public interface ContactRepository extends JpaRepository<Contact,Long> {
 
 }

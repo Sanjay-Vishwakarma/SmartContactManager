@@ -1,19 +1,22 @@
 package smartcontact.service;
 
-import smartcontact.dto.UserDto;
-import smartcontact.entities.User;
+import smartcontact.dto.UserSignInDto;
+import smartcontact.dto.UserSignUpDto;
+import smartcontact.entities.UserSignUp;
 
 import java.util.List;
 
 public interface UserService {
 
-    User saveUser(UserDto userDto);
+    UserSignUp saveUser(UserSignUpDto userDto);
 
-    void deleteUser(int id);
+    void deleteUser(long id);
 
-    List<User> getAllUsers();
+    List<UserSignUp> getAllUsers();
 
-    User updateUser(int userId, UserDto userDto);
+    UserSignUp updateUser(long userId, UserSignUpDto userDto);
 
-    User getUserById(int userId);
+    UserSignUp getUserById(long userId);
+
+    boolean userSignIn(UserSignInDto userDto);
 }

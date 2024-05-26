@@ -1,6 +1,10 @@
 package smartcontact.dto;
 
 
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDate;
@@ -9,14 +13,14 @@ import java.time.LocalDate;
 @Setter
 public class ContactDto {
 
-    private int id;
     private String name;
-    private String secondName;
-    private String work;
-    private String email;
+
+    private String username;
+
+    private String lastName;
+
     private String phone;
-    private String image;
+
     private String description;
-    private LocalDate createdAt;
-    private LocalDate updatedAt;
+
 }
