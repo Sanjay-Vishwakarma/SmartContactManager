@@ -1,12 +1,9 @@
     package smartcontact.entities;
 
 
-    import com.fasterxml.jackson.annotation.JsonManagedReference;
     import jakarta.persistence.*;
     import lombok.Data;
     import java.time.LocalDate;
-    import java.util.ArrayList;
-    import java.util.List;
 
     @Entity
     @Data
@@ -30,7 +27,7 @@
 
         private boolean enabled = true; // active or inactive
 
-//        private String imageUrl;
+//       private String imageUrl;
 
         private LocalDate createdAt;
 

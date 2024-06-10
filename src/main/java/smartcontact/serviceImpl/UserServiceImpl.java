@@ -92,16 +92,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean userSignIn(UserSignInDto userDto) {
+    public UserSignUp userSignIn(UserSignInDto userDto) {
+        UserSignUp userDetails = null;
         try {
-            UserSignUp userDetails = userRepository.findByUsernameAndPassword(userDto.getUsername(), userDto.getPassword());
+            userDetails = userRepository.findByUsernameAndPassword(userDto.getUsername(), userDto.getPassword());
             System.out.println("userDetails = " + userDetails);
-            if (userDetails !=null && userDto.getPassword().equals(userDetails.getPassword())) {
-                return true;
+            if (userDetails != null && userDto.getPassword().equals(userDetails.getPassword())) {
+                return userDetails;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+        return userDetails;
     }
 }

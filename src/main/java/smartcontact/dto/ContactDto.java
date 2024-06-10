@@ -1,26 +1,18 @@
 package smartcontact.dto;
 
-
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
-import java.time.LocalDate;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 public class ContactDto {
-
-    private String name;
-
-    private String username;
-
+    private int id=0;
+    private String uid; // Ensure this matches the userId type in Contact entity
+    private String firstName;
     private String lastName;
-
+    private String email;
     private String phone;
-
     private String description;
-
 }

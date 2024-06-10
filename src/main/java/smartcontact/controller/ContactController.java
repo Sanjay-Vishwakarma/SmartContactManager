@@ -1,6 +1,8 @@
 package smartcontact.controller;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import smartcontact.dto.ContactDto;
@@ -21,6 +23,14 @@ public class ContactController {
     // Create a new contact
     @PostMapping("/addContact")
     public ResponseEntity<ContactDto> createContact(@RequestBody ContactDto contactDto) {
+        //Long uId = (Long) session.getAttribute("uId");
+        System.out.println("contactDto = " + contactDto);
+        String uId = String.valueOf(contactDto.getUid());
+        System.out.println("uId = " + uId);
+        if (uId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+        contactDto.setUid(uId);
         ContactDto createdContact = contactService.createContact(contactDto);
         return ResponseEntity.ok(createdContact);
     }
@@ -33,14 +43,22 @@ public class ContactController {
     }
 
     // Get all contacts
-    @GetMapping("/getAllContacts")
-    public List<ContactDto> getAllContacts() {
-        return contactService.getAllContacts();
+    @GetMapping("/getAllContacts/{uid}")
+    public List<ContactDto> getAllContacts(@PathVariable int uid) {
+        System.out.println("uid = " + uid);
+        List<ContactDto> allContacts = null;
+        try {
+            allContacts = contactService.getAllContactsByUid(uid);
+            System.out.println("allContacts = " + allContacts);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return allContacts;
     }
 
     // Update a contact
-    @PutMapping("/update/{id}")
-    public ResponseEntity<ContactDto> updateContact(@PathVariable long id, @RequestBody ContactDto contactDto) {
+    @PutMapping("/updateContact/{id}")
+    public ResponseEntity<ContactDto> updateContact(@PathVariable int id, @RequestBody ContactDto contactDto) {
         ContactDto updatedContact = contactService.updateContact(id, contactDto);
         return ResponseEntity.ok(updatedContact);
     }

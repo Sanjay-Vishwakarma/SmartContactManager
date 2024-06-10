@@ -1,7 +1,5 @@
 package smartcontact.entities;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,24 +15,18 @@ public class Contact {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private int id;
 
-    private String name;
-
-    private String username;
-
+    private String firstName;
     private String lastName;
-
+    private String email;
     private String phone;
-
-    //private String image;
 
     @Column(length = 3000)
     private String description;
 
-    private long userId;
+    private String userId; // Ensure this matches the uId type in ContactDto
 
     private LocalDate createdAt;
     private LocalDate updatedAt;
-
 }

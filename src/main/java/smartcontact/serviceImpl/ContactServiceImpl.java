@@ -2,6 +2,7 @@ package smartcontact.serviceImpl;
 
 
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import smartcontact.dto.ContactDto;
@@ -12,6 +13,7 @@ import smartcontact.repository.UserRepository;
 import smartcontact.service.ContactService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,23 +26,19 @@ public class ContactServiceImpl implements ContactService {
     private ContactRepository contactRepository;
 
     @Autowired
+    private ModelMapper modelMapper;
+    @Autowired
     private UserRepository userRepository;
 
     // Convert ContactDto to Contact entity
-    private Contact dtoToEntity(ContactDto contactDto) {
-        Contact contact = new Contact();
-        contact.setName(contactDto.getName());
-        contact.setLastName(contactDto.getLastName());
-        contact.setPhone(contactDto.getPhone());
-        contact.setDescription(contactDto.getDescription());
-        return contact;
-    }
 
     // Convert Contact entity to ContactDto
     private ContactDto entityToDto(Contact contact) {
         ContactDto contactDto = new ContactDto();
-        contactDto.setName(contact.getName());
+        contactDto.setId(contact.getId());
+        contactDto.setFirstName(contact.getFirstName());
         contactDto.setLastName(contact.getLastName());
+        contactDto.setEmail(contact.getEmail());
         contactDto.setPhone(contact.getPhone());
         contactDto.setDescription(contact.getDescription());
         return contactDto;
@@ -50,19 +48,48 @@ public class ContactServiceImpl implements ContactService {
     @Transactional
     public ContactDto createContact(ContactDto contactDto) {
         Contact savedContact = null;
+        System.out.println("Received contactDto with uId: " + contactDto.getUid());
         try {
-            UserSignUp userSignUp = userRepository.findByUsername(contactDto.getUsername());
-            Contact contact = dtoToEntity(contactDto);
-            contact.setUserId(userSignUp.getId());
-            savedContact = contactRepository.save(contact);
+            Optional<UserSignUp> user = userRepository.findById(Long.valueOf(contactDto.getUid()));
+            if (user.isPresent()) {
+                UserSignUp existUser = user.get();
+                System.out.println("Found user with uId: " + existUser.getId());
+
+                Optional<Contact> byEmail = contactRepository.findByEmail(contactDto.getEmail());
+                if (byEmail.isPresent()) {
+                    System.out.println("Contact with email " + contactDto.getEmail() + " already exists.");
+                } else {
+                    Contact contact = dtoToEntity(contactDto);
+                    contact.setUserId(String.valueOf(existUser.getId()));
+                    savedContact = contactRepository.save(contact);
+                    System.out.println("Saved new contact with email " + contactDto.getEmail());
+                }
+            } else {
+                System.out.println("No user found with uId: " + contactDto.getUid()
+                );
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return entityToDto(savedContact);
     }
 
+
+    // Convert ContactDto to Contact entity
+    private Contact dtoToEntity(ContactDto contactDto) {
+        Contact contact = new Contact();
+        contact.setFirstName(contactDto.getFirstName());
+        contact.setLastName(contactDto.getLastName());
+        contact.setEmail(contactDto.getEmail());
+        contact.setPhone(contactDto.getPhone());
+        contact.setCreatedAt(LocalDate.now());
+        contact.setDescription(contactDto.getDescription());
+        return contact;
+    }
+
+
     // Get a contact by ID
-    public Optional<ContactDto> getContactById(long id) {
+    public Optional<ContactDto> getContactById(int id) {
         return contactRepository.findById(id).map(this::entityToDto);
     }
 
@@ -73,13 +100,14 @@ public class ContactServiceImpl implements ContactService {
 
     // Update a contact
     @Transactional
-    public ContactDto updateContact(long id, ContactDto contactDto) {
+    public ContactDto updateContact(int id, ContactDto contactDto) {
         Contact updatedContact = null;
         try {
             Contact contact = contactRepository.findById(id).orElseThrow(() -> new RuntimeException("Contact not found"));
-            contact.setName(contactDto.getName());
+            contact.setFirstName(contactDto.getFirstName());
             contact.setLastName(contactDto.getLastName());
             contact.setPhone(contactDto.getPhone());
+            contact.setEmail(contactDto.getEmail());
             contact.setDescription(contactDto.getDescription());
             contact.setUpdatedAt(LocalDate.now());
             updatedContact = contactRepository.save(contact);
@@ -90,9 +118,24 @@ public class ContactServiceImpl implements ContactService {
     }
 
     // Delete a contact
-    public boolean deleteContact(long id) {
+    public boolean deleteContact(int id) {
         Contact contact = contactRepository.findById(id).orElseThrow(() -> new RuntimeException("Contact not found"));
         contactRepository.delete(contact);
         return false;
+    }
+
+    @Override
+    public List<ContactDto> getAllContactsByUid(int uid) {
+        List<ContactDto> contactDtos = null;
+        try {
+            List<Contact> contacts = contactRepository.findAllContactByUid(uid);
+            System.out.println("contacts = " + contacts);
+            contactDtos = contacts.stream()
+                    .map(contact -> modelMapper.map(contact, ContactDto.class))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            e.printStackTrace(); // It's better to log this properly in a real application
+        }
+        return contactDtos;
     }
 }

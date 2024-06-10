@@ -8,11 +8,13 @@ import java.util.Optional;
 public interface ContactService {
     ContactDto createContact(ContactDto contactDto);
 
-    Optional<ContactDto> getContactById(long id);
+    Optional<ContactDto> getContactById(int id);
 
     List<ContactDto> getAllContacts();
 
-    ContactDto updateContact(long id, ContactDto contactDto);
+    ContactDto updateContact(int id, ContactDto contactDto);
 
-    boolean deleteContact(long id);
+    boolean deleteContact(int id);
+
+    List<ContactDto> getAllContactsByUid(int uid);
 }

@@ -1,5 +1,6 @@
 package smartcontact.controller;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +9,7 @@ import smartcontact.dto.UserSignInDto;
 import smartcontact.dto.UserSignUpDto;
 import smartcontact.entities.UserSignUp;
 import smartcontact.service.UserService;
+import smartcontact.util.UserSignInResponse;
 
 import java.util.List;
 
@@ -57,12 +59,17 @@ public class UserController {
 
     // user sign in
     @PostMapping("/sign")
-    public ResponseEntity<String> userSignIn(@RequestBody UserSignInDto userDto) {
-        boolean b = userService.userSignIn(userDto);
-        if (b) {
-            return new ResponseEntity<>("User Sign In Successfully...!", HttpStatus.OK);
+    public ResponseEntity<UserSignInResponse> userSignIn(@RequestBody UserSignInDto userDto, HttpSession session) {
+        UserSignUp userSignUp = userService.userSignIn(userDto);
+
+        if (userSignUp != null) {
+            //session.setAttribute("uId", userSignUp.getId());
+            UserSignInResponse response = new UserSignInResponse("User Sign In Successfully...!", userSignUp.getId());
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        return new ResponseEntity<>("User Sign In Failed...!", HttpStatus.BAD_REQUEST);
+        UserSignInResponse response = new UserSignInResponse("User Sign In Failed...!", null);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
 
 }

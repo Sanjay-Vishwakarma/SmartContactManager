@@ -18,5 +18,5 @@ public interface UserService {
 
     UserSignUp getUserById(long userId);
 
-    boolean userSignIn(UserSignInDto userDto);
+    UserSignUp userSignIn(UserSignInDto userDto);
 }
