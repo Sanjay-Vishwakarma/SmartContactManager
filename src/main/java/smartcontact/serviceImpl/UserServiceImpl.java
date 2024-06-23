@@ -13,9 +13,12 @@ import smartcontact.exception.InvalidRequestException;
 import smartcontact.exception.UserNotFoundException;
 import smartcontact.repository.ContactRepository;
 import smartcontact.repository.UserRepository;
+import smartcontact.security.AESSecurity;
 import smartcontact.service.UserService;
+import smartcontact.util.ConstantMessage;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,19 +32,22 @@ public class UserServiceImpl implements UserService {
     @Autowired
     public UserRepository userRepository;
 
+    String secretKey = "12345678901234567890123456789012"; // 32-byte key for AES-256
+
     @Transactional
     public UserSignUp saveUser(UserSignUpDto userDto) {
         // Check if email already exists for the user
         if (userRepository.existsByEmail(userDto.getEmail())) {
-            throw new InvalidRequestException("Duplicate Email: " + userDto.getEmail());
+            throw new InvalidRequestException("Already taken Email: " + userDto.getEmail());
         }
-        if (userRepository.existsByEmail(userDto.getUsername())) {
-            throw new InvalidRequestException("Duplicate username: " + userDto.getUsername());
+        if (userRepository.existsByUsername(userDto.getUsername())) {
+            throw new InvalidRequestException("Already taken username: " + userDto.getUsername());
         }
         try {
             UserSignUp user = modelMapper.map(userDto, UserSignUp.class);
-            user.setCreatedAt(LocalDate.now());
-            user.setRole("User");
+            user.setPassword(AESSecurity.encrypt(userDto.getPassword(),secretKey,userDto.getUsername()));
+            user.setCreatedAt(LocalDateTime.now());
+            user.setRole(ConstantMessage.USER);
             userRepository.save(user);
             return user;
         } catch (Exception e) {
@@ -72,6 +78,7 @@ public class UserServiceImpl implements UserService {
                 existingUser.setName(userDto.getName());
                 existingUser.setUsername(userDto.getUsername());
                 existingUser.setEmail(userDto.getEmail());
+                existingUser.setUpdatedAt(LocalDateTime.now());
                 return userRepository.save(existingUser);
             } else {
                 throw new UserNotFoundException("User not found with id: " + userId);
@@ -95,7 +102,7 @@ public class UserServiceImpl implements UserService {
     public UserSignUp userSignIn(UserSignInDto userDto) {
         UserSignUp userDetails = null;
         try {
-            userDetails = userRepository.findByUsernameAndPassword(userDto.getUsername(), userDto.getPassword());
+            userDetails = userRepository.findByUsernameAndPassword(userDto.getUsername(), AESSecurity.decrypt(userDto.getPassword(),secretKey,userDto.getUsername()));
             System.out.println("userDetails = " + userDetails);
             if (userDetails != null && userDto.getPassword().equals(userDetails.getPassword())) {
                 return userDetails;

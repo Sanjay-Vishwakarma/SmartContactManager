@@ -10,6 +10,7 @@ import smartcontact.dto.UserSignUpDto;
 import smartcontact.entities.UserSignUp;
 import smartcontact.service.UserService;
 import smartcontact.util.UserSignInResponse;
+import smartcontact.validatorImpl.ValidatorImpl;
 
 import java.util.List;
 
@@ -22,10 +23,14 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ValidatorImpl validator ;
+
     @PostMapping("/addUser")
     public ResponseEntity<String> saveUser(@RequestBody UserSignUpDto userDto) {
-        userService.saveUser(userDto);
-        return new ResponseEntity<>("Added User Successfully...!", HttpStatus.OK);
+            validator.userValidate(userDto);
+            userService.saveUser(userDto);
+            return new ResponseEntity<>("Added User Successfully...!", HttpStatus.OK);
     }
 
     @DeleteMapping("/deleteUser/{id}")

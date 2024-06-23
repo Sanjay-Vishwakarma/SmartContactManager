@@ -4,6 +4,7 @@
     import jakarta.persistence.*;
     import lombok.Data;
     import java.time.LocalDate;
+    import java.time.LocalDateTime;
 
     @Entity
     @Data
@@ -29,9 +30,9 @@
 
 //       private String imageUrl;
 
-        private LocalDate createdAt;
+        private LocalDateTime createdAt;
 
-        private LocalDate updatedAt;
+        private LocalDateTime updatedAt;
 
 
     }
