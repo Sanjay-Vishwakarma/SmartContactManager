@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Define a variable for the log directory where logs will be saved -->
+    <property name="LOG_DIR" value="D:\0-2 Intellij\SmartContactManager\src\main\resources\Logs"/>
+
+    <!-- Console Appender to save logs on the console -->
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${hostName} --- [%15.15t] [%X{uuid}] %-40.40c{1} : %m%n%ex
+            </Pattern>
+        </layout>
+    </appender>
+
+    <!-- RollingFileAppender to save logs in the file for INFO level -->
+    <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- Log file location -->
+        <file>${LOG_DIR}/INFO.log</file>
+
+        <!-- Use the same pattern for log file format as in the console appender -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${hostName} --- [%15.15t] [%X{uuid}] %-40.40c{1} : %m%n%ex
+            </Pattern>
+        </encoder>
+
+        <!-- Rolling policy is used when the file reaches 10 MB, it will regenerate a new file -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- Log file pattern with date and index -->
+            <fileNamePattern>${LOG_DIR}/INFO.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+
+        <!-- Trigger rollover based on time and size -->
+        <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <maxFileSize>5MB</maxFileSize> <!-- Max log file size -->
+        </timeBasedFileNamingAndTriggeringPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- File Appender to save logs in the file for ERROR level -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- Log file location -->
+        <file>${LOG_DIR}/ERROR.log</file>
+
+        <!-- Use the same pattern for log file format as in the console appender -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${hostName} --- [%15.15t] [%X{uuid}] %-40.40c{1} : %m%n%ex
+            </Pattern>
+        </encoder>
+
+        <!-- Rolling policy is used when the file reaches 10 MB, it will regenerate a new file -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- Log file pattern with date and index -->
+            <fileNamePattern>${LOG_DIR}/ERROR.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+
+        <!-- Trigger rollover based on time and size -->
+        <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <maxFileSize>5MB</maxFileSize> <!-- Max log file size -->
+        </timeBasedFileNamingAndTriggeringPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- File Appender to save logs in the file for DEBUG level -->
+    <appender name="DEBUG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- Log file location -->
+        <file>${LOG_DIR}/DEBUG.log</file>
+
+        <!-- Use the same pattern for log file format as in the console appender -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${hostName} --- [%15.15t] [%X{uuid}] %-40.40c{1} : %m%n%ex
+            </Pattern>
+        </encoder>
+
+        <!-- Rolling policy is used when the file reaches 10 MB, it will regenerate a new file -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- Log file pattern with date and index -->
+            <fileNamePattern>${LOG_DIR}/DEBUG.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+
+        <!-- Trigger rollover based on time and size -->
+        <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <maxFileSize>5MB</maxFileSize> <!-- Max log file size -->
+        </timeBasedFileNamingAndTriggeringPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+<!--    This is for console will get always in -->
+    <!-- Logger configuration for smartcontact.* for INFO level (all subpackages and classes) -->
+    <logger name="smartcontact" level="INFO">
+        <appender-ref ref="Console"/> <!-- Send logs to the console -->
+        <appender-ref ref="INFO_FILE"/> <!-- Send INFO level logs to the file directory -->
+    </logger>
+
+    <!-- Logger configuration for smartcontact.* for ERROR level -->
+    <logger name="smartcontact" level="ERROR">
+        <appender-ref ref="Console"/> <!-- Send logs to the console -->
+        <appender-ref ref="ERROR_FILE"/> <!-- Send ERROR level logs to the file directory -->
+    </logger>
+
+    <!-- Logger configuration for smartcontact.* for DEBUG level -->
+    <logger name="smartcontact" level="DEBUG">
+        <appender-ref ref="Console"/> <!-- Send logs to the console -->
+        <appender-ref ref="DEBUG_FILE"/> <!-- Send DEBUG level logs to the file directory -->
+    </logger>
+
+    <!-- Root logger configuration -->
+<!--    <root level="DEBUG">-->
+<!--        <appender-ref ref="Console"/> &lt;!&ndash; Send root-level logs to the console &ndash;&gt;-->
+<!--        <appender-ref ref="INFO_FILE"/> &lt;!&ndash; Send root-level INFO logs to the rolling file &ndash;&gt;-->
+<!--        <appender-ref ref="ERROR_FILE"/> &lt;!&ndash; Send root-level ERROR logs to the rolling file &ndash;&gt;-->
+<!--        <appender-ref ref="DEBUG_FILE"/> &lt;!&ndash; Send root-level DEBUG logs to the rolling file &ndash;&gt;-->
+<!--    </root>-->
+
+</configuration>

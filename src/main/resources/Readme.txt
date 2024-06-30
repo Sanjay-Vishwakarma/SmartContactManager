@@ -1,0 +1,1 @@
+D:\0-2 Intellij\SmartContactManager\src\main\resources\log

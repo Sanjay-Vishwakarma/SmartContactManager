@@ -2,7 +2,10 @@ package smartcontact.serviceImpl;
 
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import smartcontact.dto.ContactDto;
 import smartcontact.dto.UserSignInDto;
@@ -26,13 +29,16 @@ import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
     @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
     public UserRepository userRepository;
 
-    String secretKey = "12345678901234567890123456789012"; // 32-byte key for AES-256
+    @Value("${secretKey}")
+    private String secretKey;
 
     @Transactional
     public UserSignUp saveUser(UserSignUpDto userDto) {
@@ -45,7 +51,7 @@ public class UserServiceImpl implements UserService {
         }
         try {
             UserSignUp user = modelMapper.map(userDto, UserSignUp.class);
-            user.setPassword(AESSecurity.encrypt(userDto.getPassword(),secretKey,userDto.getUsername()));
+            user.setPassword(AESSecurity.encrypt(userDto.getPassword(), secretKey, userDto.getUsername()));
             user.setCreatedAt(LocalDateTime.now());
             user.setRole(ConstantMessage.USER);
             userRepository.save(user);
@@ -102,10 +108,13 @@ public class UserServiceImpl implements UserService {
     public UserSignUp userSignIn(UserSignInDto userDto) {
         UserSignUp userDetails = null;
         try {
-            userDetails = userRepository.findByUsernameAndPassword(userDto.getUsername(), AESSecurity.decrypt(userDto.getPassword(),secretKey,userDto.getUsername()));
-            System.out.println("userDetails = " + userDetails);
-            if (userDetails != null && userDto.getPassword().equals(userDetails.getPassword())) {
+            userDetails = userRepository.findByUsername(userDto.getUsername());
+            String paassword = AESSecurity.decrypt(userDetails.getPassword(), secretKey, userDto.getUsername());
+            if (userDetails != null && userDto.getPassword().equals(paassword)) {
                 return userDetails;
+            } else {
+                logger.info("inside else...");
+                return null;
             }
         } catch (Exception e) {
             e.printStackTrace();
