@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import smartcontact.dto.ChangePasswordDto;
 import smartcontact.dto.ContactDto;
 import smartcontact.dto.UserSignInDto;
 import smartcontact.dto.UserSignUpDto;
@@ -19,6 +20,7 @@ import smartcontact.repository.UserRepository;
 import smartcontact.security.AESSecurity;
 import smartcontact.service.UserService;
 import smartcontact.util.ConstantMessage;
+import smartcontact.util.Response;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -90,7 +92,7 @@ public class UserServiceImpl implements UserService {
                 throw new UserNotFoundException("User not found with id: " + userId);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+           logger.info("Failed to update user", e.getMessage());
             throw new RuntimeException("Failed to update user", e);
         }
     }
@@ -117,8 +119,32 @@ public class UserServiceImpl implements UserService {
                 return null;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info("something went wrong ====="+UserServiceImpl.class.getName() + e.getMessage());
         }
         return userDetails;
+    }
+
+    @Override
+    public Response changePassword(ChangePasswordDto changePasswordDto) {
+        Response response = new Response();
+        try {
+            if (!changePasswordDto.getNewPassword().equals(changePasswordDto.getConfirmPassword())) {
+                response.setMsg("Passwords do not match");
+                return response;
+            }
+            Optional<UserSignUp> byId = userRepository.findById(Long.valueOf(changePasswordDto.getUserId()));
+            if (byId.isPresent()) {
+                UserSignUp userSignUp1 = byId.get();
+                String userName = userSignUp1.getUsername();
+                String confirmPassword = changePasswordDto.getConfirmPassword();
+                userSignUp1.setPassword(AESSecurity.encrypt(confirmPassword, secretKey, userName));
+                userRepository.save(userSignUp1);
+                response.setMsg("Password changed successfully .... !");
+                response.setData("User successfully changed");
+            }
+        } catch (Exception e) {
+            logger.info("something went issue while changing password ====="+UserServiceImpl.class.getName() + e.getMessage());
+        }
+        return response;
     }
 }

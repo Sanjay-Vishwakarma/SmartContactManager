@@ -1,8 +1,10 @@
 package smartcontact.service;
 
+import smartcontact.dto.ChangePasswordDto;
 import smartcontact.dto.UserSignInDto;
 import smartcontact.dto.UserSignUpDto;
 import smartcontact.entities.UserSignUp;
+import smartcontact.util.Response;
 
 import java.util.List;
 
@@ -19,4 +21,6 @@ public interface UserService {
     UserSignUp getUserById(long userId);
 
     UserSignUp userSignIn(UserSignInDto userDto);
+
+    Response changePassword(ChangePasswordDto changePasswordDto);
 }
